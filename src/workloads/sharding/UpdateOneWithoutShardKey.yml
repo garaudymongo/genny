@@ -164,3 +164,11 @@ Actors:
           WriteConcern:
             Level: majority
             TimeoutMillis: 5000
+
+AutoRun:
+- When:
+    mongodb_setup:
+      $eq:
+      - shard
+      - shard-lite
+      - shard-lite-all-feature-flags
