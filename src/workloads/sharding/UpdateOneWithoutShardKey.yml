@@ -73,51 +73,51 @@ Actors:
   - *Nop
   - *Nop
 
-- Name: CRUDOpsOnShardedCollection
-  Type: CrudActor
-  Threads: 1  # We want to use 1 thread to avoid updates throwing WriteConflict errors.
-  Phases:
-  - *Nop
-  - *Nop
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *ShardedCollection
-    Operations:
-    - OperationMetricsName: UpdateOneWithoutShardKeyShardedCollection
-      OperationName: updateOne
-      OperationCommand:
-        Filter: {y: 0}
-        Update: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *ShardedCollection
-    Operations:
-    - OperationMetricsName: FindOneAndUpdateWithoutShardKeyShardedCollection
-      OperationName: findOneAndUpdate
-      OperationCommand:
-        Filter: {y: 1}
-        Update: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *ShardedCollection
-    Operations:
-    - OperationMetricsName: DeleteWithoutShardKeyShardedCollection
-      OperationName: deleteOne
-      OperationCommand:
-        Filter: {y: 2}
-        Delete: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
+# - Name: CRUDOpsOnShardedCollection
+#   Type: CrudActor
+#   Threads: 1  # We want to use 1 thread to avoid updates throwing WriteConflict errors.
+#   Phases:
+#   - *Nop
+#   - *Nop
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *ShardedCollection
+#     Operations:
+#     - OperationMetricsName: UpdateOneWithoutShardKeyShardedCollection
+#       OperationName: updateOne
+#       OperationCommand:
+#         Filter: {y: 0}
+#         Update: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *ShardedCollection
+#     Operations:
+#     - OperationMetricsName: FindOneAndUpdateWithoutShardKeyShardedCollection
+#       OperationName: findOneAndUpdate
+#       OperationCommand:
+#         Filter: {y: 1}
+#         Update: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *ShardedCollection
+#     Operations:
+#     - OperationMetricsName: DeleteWithoutShardKeyShardedCollection
+#       OperationName: deleteOne
+#       OperationCommand:
+#         Filter: {y: 2}
+#         Delete: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
 
 - Name: CRUDOpsOnUnshardedCollection
   Type: CrudActor
