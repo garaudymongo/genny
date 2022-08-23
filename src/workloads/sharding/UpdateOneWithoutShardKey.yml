@@ -38,9 +38,9 @@ Actors:
       OperationCommand:
         balancerStart: 1
   - *Nop
-  - *Nop
-  - *Nop
-  - *Nop
+  # - *Nop
+  # - *Nop
+  # - *Nop
 
 - Name: LoadInitialDataOnShardedCollection
   Type: MonotonicSingleLoader
@@ -53,9 +53,9 @@ Actors:
     DocumentCount: *DocumentCount
     Database: *Database
     Document: {x: 0, y: 0}
-  - *Nop
-  - *Nop
-  - *Nop
+  # - *Nop
+  # - *Nop
+  # - *Nop
 
 - Name: LoadInitialDataOnUnshardedCollection
   Type: MonotonicSingleLoader
@@ -69,9 +69,9 @@ Actors:
     Database: *Database
     Collection: *UnshardedCollection
     Document: {x: 1, y: 1}
-  - *Nop
-  - *Nop
-  - *Nop
+  # - *Nop
+  # - *Nop
+  # - *Nop
 
 # - Name: CRUDOpsOnShardedCollection
 #   Type: CrudActor
@@ -119,51 +119,51 @@ Actors:
 #             Level: majority
 #             TimeoutMillis: 5000
 
-- Name: CRUDOpsOnUnshardedCollection
-  Type: CrudActor
-  Threads: 1  # We want to use 1 thread to avoid updates throwing WriteConflict errors.
-  Phases:
-  - *Nop
-  - *Nop
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *UnshardedCollection
-    Operations:
-    - OperationMetricsName: UpdateOneWithoutShardKeyUnshardedCollection
-      OperationName: updateOne
-      OperationCommand:
-        Filter: {y: 1}
-        Update: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *UnshardedCollection
-    Operations:
-    - OperationMetricsName: FindOneAndUpdateWithoutShardKeyUnshardedCollection
-      OperationName: findOneAndUpdate
-      OperationCommand:
-        Filter: {y: 2}
-        Update: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
-  - Repeat: *DocumentCount
-    Database: *Database
-    Collection: *UnshardedCollection
-    Operations:
-    - OperationMetricsName: DeleteWithoutShardKeyUnshardedCollection
-      OperationName: deleteOne
-      OperationCommand:
-        Filter: {y: 3}
-        Delete: {$inc: {y: 1}}
-        Options:
-          WriteConcern:
-            Level: majority
-            TimeoutMillis: 5000
+# - Name: CRUDOpsOnUnshardedCollection
+#   Type: CrudActor
+#   Threads: 1  # We want to use 1 thread to avoid updates throwing WriteConflict errors.
+#   Phases:
+#   - *Nop
+#   - *Nop
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *UnshardedCollection
+#     Operations:
+#     - OperationMetricsName: UpdateOneWithoutShardKeyUnshardedCollection
+#       OperationName: updateOne
+#       OperationCommand:
+#         Filter: {y: 1}
+#         Update: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *UnshardedCollection
+#     Operations:
+#     - OperationMetricsName: FindOneAndUpdateWithoutShardKeyUnshardedCollection
+#       OperationName: findOneAndUpdate
+#       OperationCommand:
+#         Filter: {y: 2}
+#         Update: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
+#   - Repeat: *DocumentCount
+#     Database: *Database
+#     Collection: *UnshardedCollection
+#     Operations:
+#     - OperationMetricsName: DeleteWithoutShardKeyUnshardedCollection
+#       OperationName: deleteOne
+#       OperationCommand:
+#         Filter: {y: 3}
+#         Delete: {$inc: {y: 1}}
+#         Options:
+#           WriteConcern:
+#             Level: majority
+#             TimeoutMillis: 5000
 
 AutoRun:
 - When:
