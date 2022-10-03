@@ -1,0 +1,109 @@
+SchemaVersion: 2018-07-01
+Owner: "@mongodb/sharding"
+Description: |
+  Generates 100GB of data.
+
+  The workload consists of 2 phases:
+    1. Creating an empty collection.
+    2. Populating the sharded collection with data.
+
+  The inserted documents have the following form:
+
+      {_id: 10, oldKey: 20, newKey: 30, counter: 0, padding: 'random string of bytes ...'}
+
+
+GlobalDefaults:
+  Nop: &Nop {Nop: true}
+
+  Database: &Database test
+  # Collection0 is the default collection populated by the MonotonicSingleLoader.
+  Collection: &Collection Collection0
+  Namespace: &Namespace test.Collection0
+
+  # Note that the exact document size may exceed ApproxDocumentSize because of field names and other
+  # fields in the document.
+  ApproxDocumentSize: &ApproxDocumentSize 10000  # = 5kB
+  ApproxDocumentSize80Pct: &ApproxDocumentSize80Pct 8000  # = 4kB
+  # TODO: Increase DocumentCount to 4000000 so there will be ~20GB of data inserted on each shard
+  # and increase NumReshardedChunks to 400 so there continue to be ~50MB of data per chunk.
+  DocumentCount: &DocumentCount 20000000  # for an approximate total of 100GB
+  NumChunks: &NumChunks 1              # with approximately 100GB per chunk
+
+  ShardKeyValueMin: &ShardKeyValueMin 1
+  ShardKeyValueMax: &ShardKeyValueMax 100
+
+  ReadWriteOperations: &ReadWriteOperations
+  - OperationName: findOne
+    OperationCommand:
+      Filter: {_id: {^RandomInt: {min: 1, max: *DocumentCount}}}
+  - OperationName: updateOne
+    OperationCommand:
+      Filter: {_id: {^RandomInt: {min: 1, max: *DocumentCount}}}
+      Update: {$inc: {counter: 1}}
+
+Clients:
+  Default:
+    QueryOptions:
+      maxPoolSize: 300
+  # The reshardCollection command is expected to take a long to complete so we give the actor
+  # running it a much higher socket timeout.
+  ReshardCollection:
+    QueryOptions:
+      maxPoolSize: 1
+      socketTimeoutMS: 3600000  # = 1 hour
+
+Actors:
+- Name: CreateShardedCollection
+  Type: AdminCommand
+  Threads: 1
+  Phases:
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+
+- Name: LoadInitialData
+  Type: MonotonicSingleLoader
+  Threads: 100
+  Phases:
+  - *Nop
+  - Repeat: 1
+    BatchSize: 1000
+    DocumentCount: *DocumentCount
+    Database: *Database
+    Document:
+      oldKey: {^RandomInt: {min: *ShardKeyValueMin, max: *ShardKeyValueMax}}
+      newKey: {^RandomInt: {min: *ShardKeyValueMin, max: *ShardKeyValueMax}}
+      counter: 0
+      padding: {^FastRandomString: {length: {^RandomInt: {min: *ApproxDocumentSize80Pct, max: *ApproxDocumentSize}}}}
+  - *Nop
+  - *Nop
+  - *Nop
+
+- Name: ReshardCollection
+  Type: AdminCommand
+  Threads: 1
+  ClientName: ReshardCollection
+  Phases:
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+
+- Name: ReadWriteCollectionBeingResharded
+  Type: CrudActor
+  Threads: 100
+  Database: *Database
+  Phases:
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+  - *Nop
+
+AutoRun:
+- When:
+    mongodb_setup:
+      $eq: shard-lite-all-feature-flags
